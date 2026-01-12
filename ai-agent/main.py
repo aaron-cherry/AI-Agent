@@ -26,7 +26,6 @@ Prompt tokens: {response_content.usage_metadata.prompt_token_count}
 Response tokens: {response_content.usage_metadata.candidates_token_count}
       """
 
-if args.verbose:
-    print(verbose_debug)
+if args.verbose: print(verbose_debug)
 
 print(response_content.text)
