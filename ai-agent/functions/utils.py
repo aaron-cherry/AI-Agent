@@ -5,7 +5,7 @@ def get_validated_path(working_directory, file_path):
     abs_file_path = os.path.normpath(os.path.join(abs_working_dir, file_path))
 
     if os.path.commonpath([abs_working_dir, abs_file_path]) != abs_working_dir:
-        return None, f'Error: "{file_path}" is outside the permitted working directory'
+        return None, f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
 
     return abs_file_path, None
 
