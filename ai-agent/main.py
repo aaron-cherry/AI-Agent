@@ -1,5 +1,6 @@
 import os
 import argparse
+import prompts
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -18,7 +19,11 @@ messages = [types.Content(role="user", parts=[types.Part(text=args.prompt)])]
 
 client = genai.Client(api_key=api_key)
 
-response_content = client.models.generate_content(model="gemini-2.5-flash", contents=messages)
+response_content = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=messages,
+    config=types.GenerateContentConfig(system_instruction=prompts.system_prompt)
+    )
 
 verbose_debug = f"""
 User prompt: {args.prompt}
