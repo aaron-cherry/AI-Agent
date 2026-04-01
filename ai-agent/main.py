@@ -4,6 +4,7 @@ import prompts
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from call_function import available_functions
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -22,7 +23,7 @@ client = genai.Client(api_key=api_key)
 response_content = client.models.generate_content(
     model="gemini-2.5-flash",
     contents=messages,
-    config=types.GenerateContentConfig(system_instruction=prompts.system_prompt)
+    config=types.GenerateContentConfig(tools=[available_functions], system_instruction=prompts.system_prompt)
     )
 
 verbose_debug = f"""
@@ -32,5 +33,10 @@ Response tokens: {response_content.usage_metadata.candidates_token_count}
       """
 
 if args.verbose: print(verbose_debug)
+
+if response_content.function_calls:
+    for function_call in response_content.function_calls:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+    #exit()
 
 print(response_content.text)
