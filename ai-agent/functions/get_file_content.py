@@ -23,7 +23,7 @@ def get_file_content(working_directory, file_path):
         print(f'Error: {str(e)}')
         return f'Error: {str(e)}'
     
-schema_get_files_info = types.FunctionDeclaration(
+schema_get_file_content = types.FunctionDeclaration(
     name="get_file_content",
     description="Returns the content of a file up to the first 1000 characters. Returns error if file path validation fails or if path is not a file",
     parameters=types.Schema(
@@ -34,5 +34,6 @@ schema_get_files_info = types.FunctionDeclaration(
                 description="Path to the file to read",
             ),
         },
+        required=["file_path"]
     ),
 )
