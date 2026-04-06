@@ -8,7 +8,7 @@ def write_file(working_directory, file_path, content):
     if abs_file_path is None:
         return error or "Error: An unknown validation error occured"
     
-    if not utils.is_file(working_directory, file_path):
+    if os.path.isdir(abs_file_path):
         return f'Error: Cannot write to {file_path} as it is a directory'
     
     os.makedirs(os.path.dirname(abs_file_path), exist_ok=True)
