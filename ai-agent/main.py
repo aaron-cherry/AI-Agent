@@ -20,31 +20,48 @@ messages = [types.Content(role="user", parts=[types.Part(text=args.prompt)])]
 
 client = genai.Client(api_key=api_key)
 
-response_content = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=messages,
-    config=types.GenerateContentConfig(tools=[available_functions], system_instruction=prompts.system_prompt)
-    )
+for _ in range(20):
 
-verbose_debug = f"""
-User prompt: {args.prompt}
-Prompt tokens: {response_content.usage_metadata.prompt_token_count}
-Response tokens: {response_content.usage_metadata.candidates_token_count}
-      """
+    response_content = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=messages,
+        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=prompts.system_prompt)
+        )
+    
+    if response_content.candidates is not None:
+        for message in response_content.candidates:
+            if message.content is None:
+                raise Exception("candidate.content is None")
+            messages.append(message.content)
 
-if args.verbose: print(verbose_debug)
+    prompt_tokens = response_content.usage_metadata.prompt_token_count if response_content.usage_metadata else None
+    response_tokens = response_content.usage_metadata.candidates_token_count if response_content.usage_metadata else None
 
-if response_content.function_calls:
-    function_responses = []
-    for function_call in response_content.function_calls:
-        result = call_function(function_call, args.verbose)
-        if result.parts is None: raise Exception("result.parts is empty/None")
-        if result.parts[0].function_response is None: raise Exception("first part of function response is None")
-        if result.parts[0].function_response.response is None: raise Exception("function response is None")
-        function_responses.append(result.parts[0])
-        if args.verbose:
-            print(f"-> {result.parts[0].function_response.response}")
-    #exit()
+    verbose_debug = f"""
+    User prompt: {args.prompt}
+    Prompt tokens: {prompt_tokens}
+    Response tokens: {response_tokens}
+        """
 
-if not response_content.function_calls:
-    print(response_content.text)
+    if args.verbose: print(verbose_debug)
+
+    if response_content.function_calls:
+        function_responses = []
+        for function_call in response_content.function_calls:
+            result = call_function(function_call, args.verbose)
+            if result.parts is None: raise Exception("result.parts is empty/None")
+            if result.parts[0].function_response is None: raise Exception("first part of function response is None")
+            if result.parts[0].function_response.response is None: raise Exception("function response is None")
+            function_responses.append(result.parts[0])
+            if args.verbose:
+                print(f"-> {result.parts[0].function_response.response}")
+        #exit()
+
+    if not response_content.function_calls:
+        print(response_content.text)
+        break
+
+    messages.append(types.Content(role="user", parts=function_responses))
+else:
+    print("max iterations reached")
+    exit(1)
